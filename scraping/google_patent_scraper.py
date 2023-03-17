@@ -157,6 +157,7 @@ class Google_Patent_Scraper():
         while count <= 4:
             url = self.url.format(self.search, count)
             self.driver.get(url)
+            print('\n--------Current URL--------\n', self.driver.current_url)
             time.sleep(3)
             elements = self.driver.find_elements(by = 'tag name', value = 'search-result-item')
             
