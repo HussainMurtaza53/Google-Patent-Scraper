@@ -20,15 +20,16 @@ class Google_Patent_Scraper():
 
     # Constructor to save website which we will pass while calling Scraper class:
     def __init__(self, search):
+        user_agent = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.50 Safari/537.36'
+        
         self.options = Options()
-        # options.headless = True
-        self.options.binary_location = os.environ.get("GOOGLE_CHROME_BIN")
+        self.options.add_argument(f'user-agent={user_agent}')
         self.options.add_argument("--headless")
+        self.options.binary_location = os.environ.get("GOOGLE_CHROME_BIN")
         self.options.add_argument("--disable-dev-shm-usage")
-        self.options.add_argument('--disable-gpu')
         self.options.add_argument("--no-sandbox")
-
-        self.driver = webdriver.Chrome(executable_path=os.environ.get("CHROMEDRIVER_PATH"), chrome_options=self.options)
+        
+        self.driver = webdriver.Chrome(executable_path = os.environ.get("CHROMEDRIVER_PATH"), chrome_options = self.options)
 #         self.driver = webdriver.Chrome(ChromeDriverManager().install(), chrome_options=self.options)
         self.search = "+".join(search.split())
         self.url = 'https://patents.google.com/?q=({0})&oq={0}&page={1}'
