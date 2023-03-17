@@ -252,8 +252,12 @@ class Google_Patent_Scraper():
                 self.close_new_tab()
 
                 all_details.append(dic)
+                
+                print('\n----------Dic-----------\n', dic)
 
                 self.save_data(all_details)
+                
+                print('\n------Done-------\n')
 
                 # with open('google_patent_results.json', 'w') as outfile:
                 #     json.dump(all_details, outfile)
