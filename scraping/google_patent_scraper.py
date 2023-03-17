@@ -167,6 +167,8 @@ class Google_Patent_Scraper():
                     time.sleep(2)
                     soup = self.get_soup(self.driver.page_source)
                 all_headings = self.get_all_headings(soup)
+                print('\n---------Page Source-----------\n', self.driver.page_source)
+                print('\n---------Soup-----------\n', soup)
                 try:
                     abstract = " ".join(soup.find('abstract').text.split())
                 except:
@@ -258,7 +260,7 @@ class Google_Patent_Scraper():
                 self.save_data(all_details)
                 
                 print('\n------Done-------\n')
-
+                breakpoint()
                 # with open('google_patent_results.json', 'w') as outfile:
                 #     json.dump(all_details, outfile)
             
