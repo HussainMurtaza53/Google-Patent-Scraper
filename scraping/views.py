@@ -23,6 +23,7 @@ def google_patent_results(request):
     #     patents_data = json.load(f)
     
     data = pd.read_excel('./Data/Google_Patents_Data.xlsx')
+    print('\n----------Data-----------\n', data)
     patents_data = []
     for d in range(len(data)):
         dic = {
@@ -42,7 +43,7 @@ def google_patent_results(request):
         }
 
         patents_data.append(dic)
-    
+    print('\n----------Data LS-----------\n', patents_data)
     context = {
         'patents': patents_data,
         'length': len(patents_data),
