@@ -25,12 +25,12 @@ class Google_Patent_Scraper():
         self.options = Options()
         self.options.add_argument(f'user-agent={user_agent}')
         self.options.add_argument("--headless")
-#         self.options.binary_location = os.environ.get("GOOGLE_CHROME_BIN")
-        self.options.add_argument("--disable-dev-shm-usage")
-        self.options.add_argument("--no-sandbox")
+        self.options.binary_location = os.environ.get("GOOGLE_CHROME_BIN")
+#         self.options.add_argument("--disable-dev-shm-usage")
+#         self.options.add_argument("--no-sandbox")
         
-#         self.driver = webdriver.Chrome(executable_path = os.environ.get("CHROMEDRIVER_PATH"), chrome_options = self.options)
-        self.driver = webdriver.Chrome(ChromeDriverManager().install(), chrome_options=self.options)
+        self.driver = webdriver.Chrome(executable_path = os.environ.get("CHROMEDRIVER_PATH"), chrome_options = self.options)
+#         self.driver = webdriver.Chrome(ChromeDriverManager().install(), chrome_options=self.options)
         self.search = "+".join(search.split())
         self.url = 'https://patents.google.com/?q=({0})&oq={0}&page={1}'
 
