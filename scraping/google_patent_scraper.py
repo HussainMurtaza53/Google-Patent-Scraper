@@ -142,7 +142,7 @@ class Google_Patent_Scraper():
     def save_data(self, data_ls):
 
         scraped_data = pd.DataFrame(data_ls)
-        scraped_data.to_excel('Data/Google_Patents_Data.xlsx')
+        scraped_data.to_excel('./Data/Google_Patents_Data.xlsx')
 
     # This is the main function that will scrape all data:
     def main(self):
