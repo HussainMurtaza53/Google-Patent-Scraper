@@ -5,7 +5,7 @@ import time
 import json
 from bs4 import BeautifulSoup
 from webdriver_manager.chrome import ChromeDriverManager
-from selenium.webdriver.chrome.options import Options
+# from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -22,17 +22,23 @@ class Google_Patent_Scraper():
     def __init__(self, search):
         user_agent = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.50 Safari/537.36'
         
-        options = Options()
-        options.add_argument(f'user-agent={user_agent}')
-        options.add_argument("--headless")
-#         self.options.binary_location = os.environ.get("GOOGLE_CHROME_BIN")
-        # self.options.binary_location = '/app/.apt/opt/google/chrome/chrome'
-        options.binary_location = os.environ.get("GOOGLE_CHROME_BIN")
-        options.add_argument("--disable-dev-shm-usage")
+#         options = Options()
+#         options.add_argument(f'user-agent={user_agent}')
+#         options.add_argument("--headless")
+# #         self.options.binary_location = os.environ.get("GOOGLE_CHROME_BIN")
+#         # self.options.binary_location = '/app/.apt/opt/google/chrome/chrome'
+#         options.binary_location = os.environ.get("GOOGLE_CHROME_BIN")
+#         options.add_argument("--disable-dev-shm-usage")
 #         self.options.add_argument("--no-sandbox")
+        chrome_options = webdriver.ChromeOptions()
+        chrome_options.binary_location = os.environ.get("GOOGLE_CHROME_BIN")
+        chrome_options.add_argument("--headless")
+        chrome_options.add_argument("--disable-dev-shm-usage")
+        chrome_options.add_argument("--no-sandbox")
+        self.driver = webdriver.Chrome(executable_path=os.environ.get("CHROMEDRIVER_PATH"), chrome_options=chrome_options)
         
         # self.driver = webdriver.Chrome(executable_path = '/app/.chromedriver/bin/chromedriver', chrome_options = self.options)
-        self.driver = webdriver.Chrome(executable_path=os.environ.get("CHROMEDRIVER_PATH"), chrome_options=options)
+        # self.driver = webdriver.Chrome(executable_path=os.environ.get("CHROMEDRIVER_PATH"), chrome_options=options)
 #         self.driver = webdriver.Chrome(ChromeDriverManager().install(), chrome_options=self.options)
         self.search = "+".join(search.split())
         self.url = 'https://patents.google.com/?q=({0})&oq={0}&page={1}'
