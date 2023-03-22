@@ -19,3 +19,4 @@ tqdm==4.65.0
 tzdata==2022.7
 urllib3==1.26.15
 wordninja==2.0.0
+openpyxl
