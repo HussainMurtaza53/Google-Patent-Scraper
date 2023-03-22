@@ -108,18 +108,18 @@ class Google_Patent_Scraper():
         date, c_time = str(datetime.now()).split()
         print('\nStart Time: ', c_time, '\n')
         
-        data_dir = os.listdir('./Data')
-        print('\n--------- Old Files ---------\n', data_dir)
+#         data_dir = os.listdir('./Data')
+#         print('\n--------- Old Files ---------\n', data_dir)
 #         filename = 'Google_Patents_Data.xlsx'
 #         if filename in data_dir:
 #             os.remove('./Data/Google_Patents_Data.xlsx')
 #         print('\n--------- Current Files ---------\n', os.listdir('./Data'))
         
-        scraped_data = pd.DataFrame([])
-        scraped_data.to_excel('./Data/Google_Patents_Data.xlsx')
+#         scraped_data = pd.DataFrame([])
+#         scraped_data.to_excel('./Data/Google_Patents_Data.xlsx')
         
-        data_dir = os.listdir('./Data')
-        print('\n--------- Old Files ---------\n', data_dir)
+#         data_dir = os.listdir('./Data')
+#         print('\n--------- Old Files ---------\n', data_dir)
 
         count = 0
         while len(all_details) <= 50:
@@ -230,8 +230,8 @@ class Google_Patent_Scraper():
 
                     self.save_data(all_details)
                     
-                    data_dir = os.listdir('./Data')
-                    print('\n--------- Old Files ---------\n', data_dir)
+#                     data_dir = os.listdir('./Data')
+#                     print('\n--------- Old Files ---------\n', data_dir)
 
                     # with open('google_patent_results.json', 'w') as outfile:
                     #     json.dump(all_details, outfile)
