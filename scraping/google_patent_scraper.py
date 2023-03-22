@@ -5,6 +5,7 @@ from bs4 import BeautifulSoup
 import pandas as pd
 import requests
 import wordninja
+import os
 
 
 class Google_Patent_Scraper():
@@ -106,6 +107,9 @@ class Google_Patent_Scraper():
 
         date, c_time = str(datetime.now()).split()
         print('\nStart Time: ', c_time, '\n')
+        
+        os.remove('./Data/Google_Patents_Data.xlsx')
+        print('\n--------- Current Files ---------\n', os.listdir('./Data'))
 
         count = 0
         while len(all_details) <= 50:
