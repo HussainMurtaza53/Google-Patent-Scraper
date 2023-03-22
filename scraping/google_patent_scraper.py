@@ -1,62 +1,18 @@
 # Importing all Pre-requisites:
 from tqdm import tqdm
 from datetime import datetime
-import time
-import json
 from bs4 import BeautifulSoup
-from webdriver_manager.chrome import ChromeDriverManager
-# from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.common.action_chains import ActionChains
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.by import By
-from selenium.webdriver.common.keys import Keys
-from selenium import webdriver
 import pandas as pd
-import os
+import requests
+import wordninja
 
 
 class Google_Patent_Scraper():
 
     # Constructor to save website which we will pass while calling Scraper class:
     def __init__(self, search):
-        user_agent = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.50 Safari/537.36'
-        
-#         options = Options()
-#         options.add_argument(f'user-agent={user_agent}')
-#         options.add_argument("--headless")
-# #         self.options.binary_location = os.environ.get("GOOGLE_CHROME_BIN")
-#         # self.options.binary_location = '/app/.apt/opt/google/chrome/chrome'
-#         options.binary_location = os.environ.get("GOOGLE_CHROME_BIN")
-#         options.add_argument("--disable-dev-shm-usage")
-#         self.options.add_argument("--no-sandbox")
-        chrome_options = webdriver.ChromeOptions()
-        chrome_options.binary_location = os.environ.get("GOOGLE_CHROME_BIN")
-        chrome_options.add_argument("--headless")
-        chrome_options.add_argument(f'user-agent={user_agent}')
-        chrome_options.add_argument("--disable-dev-shm-usage")
-        chrome_options.add_argument("--no-sandbox")
-        self.driver = webdriver.Chrome(executable_path=os.environ.get("CHROMEDRIVER_PATH"), chrome_options=chrome_options)
-        
-        # self.driver = webdriver.Chrome(executable_path = '/app/.chromedriver/bin/chromedriver', chrome_options = self.options)
-        # self.driver = webdriver.Chrome(executable_path=os.environ.get("CHROMEDRIVER_PATH"), chrome_options=options)
-#         self.driver = webdriver.Chrome(ChromeDriverManager().install(), chrome_options=self.options)
         self.search = "+".join(search.split())
-        self.url = 'https://patents.google.com/?q=({0})&oq={0}&page={1}'
-
-    # def get_all_links(self):
-    #     all_links = []
-    #     count = 0
-    #     while count <= 4:
-    #         url = self.url.format(self.search, count)
-    #         self.driver.get(url)
-    #         time.sleep(3)
-    #         breakpoint()
-    #         elements = self.driver.find_elements(by = 'tag name', value = 'search-result-item')
-    #         page_links = [e.find_element(by = 'tag name', value = 'a').get_attribute('href') for e in elements]
-    #         all_links += page_links
-    #         count += 1
-    #     return all_links
+        self.main_url = 'https://www.google.com/search?q={0}&tbm=pts&sxsrf=AJOqlzUNTt673TM7N19-yya2UM4oila_bg:1679480269775&ei=zdUaZKbsLrWAi-gP-9Sj2A8&start={1}&sa=N&ved=2ahUKEwjmhozHp-_9AhU1wAIHHXvqCPsQ8NMDegQIDhAW&biw=1408&bih=975&dpr=1'
     
     def index_containing_substring(self, the_list, substring):
         for i, s in enumerate(the_list):
@@ -105,50 +61,38 @@ class Google_Patent_Scraper():
         all_headings = [h.text for h in soup.find_all('heading')]
         return all_headings
     
-    def get_soup(self, content):
-        soup = BeautifulSoup(content, 'html.parser')
+    def get_soup(self, url):
+        response = requests.get(url)
+        soup = BeautifulSoup(response.content, 'html.parser')
         return soup
-    
-    def new_tab(self, element):
-        p_element = element.find_element(by = 'tag name', value = 'state-modifier')
-        ActionChains(self.driver).key_down(Keys.CONTROL).click(p_element).key_up(Keys.CONTROL).perform()
-        self.driver.switch_to.window(self.driver.window_handles[1])
-        wait = WebDriverWait(self.driver, 10)
-        wait.until(EC.presence_of_element_located((By.TAG_NAME, 'body')))
-        # time.sleep(2)
-        try:
-            self.driver.page_source
-        except:
-            try:
-                print('Page Source not found 1')
-                time.sleep(2)
-                self.driver.page_source
-            except:
-                try:
-                    print('Page Source not found 2')
-                    time.sleep(2)
-                    self.driver.page_source
-                except:
-                    try:
-                        print('Page Source not found 3')
-                        time.sleep(2)
-                        self.driver.page_source
-                    except:
-                        try:
-                            print('Page Source not found 4')
-                            time.sleep(2)
-                            self.driver.page_source
-                        except:
-                            print('Page Source not found 5')
-                            time.sleep(3)
-    
-    def close_new_tab(self):
-        self.driver.close()
-        self.driver.switch_to.window(self.driver.window_handles[0])
 
     def get_text_by_tags(self, soup, tag):
         para_text = soup.find(tag).text
         return para_text
+    
+    def get_all_ref_num(self, soup):
+        patents_ls = soup.text.split('/patents/')
+        ref_num = []
+        for i in range(1, len(patents_ls)):
+            mix_ref_num = patents_ls[i].split()[0]
+            if '?' in mix_ref_num:
+                ref_num.append(mix_ref_num.split('?')[0])
+            else:
+                word_ninja_ls = wordninja.split(mix_ref_num)
+                if len(word_ninja_ls) > 2:
+                    ref_num.append("".join(word_ninja_ls[:-1]))
+                else:
+                    ref_num.append("".join(word_ninja_ls))
+        return ref_num
+    
+    def get_classification(self, soup):
+        section = soup.find_all('section')
+        classification = None
+        for s in section:
+            s_text = s.find_next().text
+            if 'Classifications' in s_text:
+                classification = s.text
+        return classification
     
     def save_data(self, data_ls):
 
@@ -164,119 +108,117 @@ class Google_Patent_Scraper():
         print('\nStart Time: ', c_time, '\n')
 
         count = 0
-        while count <= 4:
-            url = self.url.format(self.search, count)
-            self.driver.get(url)
-            print('\n--------Current URL--------\n', self.driver.current_url)
-            time.sleep(3)
-            elements = self.driver.find_elements(by = 'tag name', value = 'search-result-item')
+        while len(all_details) <= 50:
+            url = self.main_url.format(self.search, count)
+            soup = self.get_soup(url)
+            all_ref_num = self.get_all_ref_num(soup)
             
-            for e in tqdm(range(len(elements))):
-                self.new_tab(elements[e])
-                try:
-                    soup = self.get_soup(self.driver.page_source)
-                except:
-                    time.sleep(2)
-                    soup = self.get_soup(self.driver.page_source)
+            for num in tqdm(range(len(all_ref_num))):
+                patent_url = 'https://patents.google.com/patent/{0}?oq={1}'.format(all_ref_num[num], self.search)
+                soup = self.get_soup(patent_url)
                 all_headings = self.get_all_headings(soup)
-                print('\n---------Page Source-----------\n', self.driver.page_source)
-                print('\n---------Soup-----------\n', soup)
-                try:
-                    abstract = " ".join(soup.find('abstract').text.split())
-                except:
-                    abstract = None
-                try:
-                    patent_num = soup.find('h2').text
-                except:
-                    patent_num = None
-                try:
-                    title = " ".join(soup.find('h1', id = 'title').text.split())
-                except:
-                    title = None
-                try:
-                    classification = " ".join(soup.find('classification-viewer').text.split())
-                except:
-                    classification = None
-                try:
-                    claims = " ".join(soup.find('section', id = 'claims').text.split())
-                except:
-                    claims = None
-                try:
-                    images = [i['src'] for i in soup.find('image-carousel').find_all('img')]
-                except:
-                    images = None
-                try:
+                title_text = soup.title.text
+                if 'Error' not in title_text:
+                    header = title_text.split(' - ')
                     try:
-                        description = self.get_text_by_tags(soup, 'description')
+                        abstract = " ".join(soup.find('abstract').text.split())
                     except:
-                        description = self.get_description('background', all_headings, soup)
-                except:
-                    description = None
-                try:
+                        abstract = None
                     try:
-                        background = self.get_text_by_tags(soup, 'background-art')
+                        # patent_num = soup.find('h2').text
+                        patent_num = header[0]
                     except:
-                        background = self.get_headings_paragraph('background', all_headings, 'summary', soup)
-                except:
-                    background = None
-                try:
+                        patent_num = None
                     try:
-                        summary = self.get_text_by_tags(soup, 'summary-of-invention') # To be done
+                        # title = " ".join(soup.find('h1', id = 'title').text.split())
+                        title = " ".join(header[1].split())
                     except:
-                        summary = self.get_headings_paragraph('summary', all_headings, 'drawing', soup)
-                except:
-                    summary = None
-                try:
-                    tech_field = self.get_text_by_tags(soup, 'technical-field')
-                except:
-                    tech_field = None
-                try:
+                        title = None
                     try:
-                        drawing = self.get_text_by_tags(soup, 'description-of-drawings')
-                    except:
-                        drawing = self.get_headings_paragraph('drawing', all_headings, 'detail', soup)
-                except:
-                    drawing = None
-                try:
-                    try:
-                        detail_desc = self.get_text_by_tags(soup, 'description-of-embodiments')
-                    except:
                         try:
-                            detail_desc = self.get_text_by_tags(soup, 'disclosure')
+                            classification = " ".join(soup.find('classification-viewer').text.split())
                         except:
-                            detail_desc = self.get_headings_paragraph('detail', all_headings, None, soup)
-                except:
-                    detail_desc = None
-                
-                dic = {
-                    "Title": title,
-                    "Patent_Number": patent_num,
-                    "Abstract": abstract,
-                    "Classification": classification,
-                    "Claims": claims,
-                    "Images": images,
-                    "Description": description,
-                    "Background": background,
-                    "Summary": summary,
-                    "Technical_Field": tech_field,
-                    "Description_Of_The_Drawings": drawing,
-                    "Description_Of_The_Embodiments": detail_desc
-                }
+                            classification = self.get_classification(soup)
+                    except:
+                        classification = None
+                    try:
+                        # claims = " ".join(soup.find('section', id = 'claims').text.split())
+                        claims = soup.find('section', itemprop = 'claims').text
+                    except:
+                        claims = None
+                    try:
+                        # images = [i['src'] for i in soup.find('image-carousel').find_all('img')]
+                        images = [i.find('img')['src'] for i in soup.find_all('li', itemprop = 'images')]
+                    except:
+                        images = None
+                    try:
+                        try:
+                            background = self.get_text_by_tags(soup, 'background-art')
+                        except:
+                            background = self.get_headings_paragraph('background', all_headings, 'summary', soup)
+                    except:
+                        background = None
+                    try:
+                        try:
+                            summary = self.get_text_by_tags(soup, 'summary-of-invention') # To be done
+                        except:
+                            summary = self.get_headings_paragraph('summary', all_headings, 'drawing', soup)
+                    except:
+                        summary = None
+                    try:
+                        tech_field = self.get_text_by_tags(soup, 'technical-field')
+                    except:
+                        tech_field = None
+                    try:
+                        try:
+                            drawing = self.get_text_by_tags(soup, 'description-of-drawings')
+                        except:
+                            drawing = self.get_headings_paragraph('drawing', all_headings, 'detail', soup)
+                    except:
+                        drawing = None
+                    try:
+                        try:
+                            detail_desc = self.get_text_by_tags(soup, 'description-of-embodiments')
+                        except:
+                            try:
+                                detail_desc = self.get_text_by_tags(soup, 'disclosure')
+                            except:
+                                detail_desc = self.get_headings_paragraph('detail', all_headings, None, soup)
+                    except:
+                        detail_desc = None
+                    try:
+                        try:
+                            description = self.get_text_by_tags(soup, 'description')
+                        except:
+                            description = self.get_description('background', all_headings, soup)
+                    except:
+                        description = "{0}\n{1}\n{2}\n{3}\n{4}".format(background, summary, tech_field, drawing, detail_desc)
+                    
+                    dic = {
+                        "Title": title,
+                        "Patent_Number": patent_num,
+                        "Abstract": abstract,
+                        "Classification": classification,
+                        "Claims": claims,
+                        "Images": images,
+                        "Description": description,
+                        "Background": background,
+                        "Summary": summary,
+                        "Technical_Field": tech_field,
+                        "Description_Of_The_Drawings": drawing,
+                        "Description_Of_The_Embodiments": detail_desc
+                    }
 
-                self.close_new_tab()
+                    all_details.append(dic)
+                    
+                    # print('\n----------Dic-----------\n', dic)
 
-                all_details.append(dic)
-                
-                print('\n----------Dic-----------\n', dic)
+                    self.save_data(all_details)
 
-                self.save_data(all_details)
-                
-                print('\n------Done-------\n')
-#                 breakpoint()
-                # with open('google_patent_results.json', 'w') as outfile:
-                #     json.dump(all_details, outfile)
+                    # with open('google_patent_results.json', 'w') as outfile:
+                    #     json.dump(all_details, outfile)
             
-            count += 1
+            count += 10
         
         date, c_time = str(datetime.now()).split()
         print('\nEnd Time: ', c_time, '\n')
