@@ -97,8 +97,8 @@ class Google_Patent_Scraper():
     
     def save_data(self, data_ls):
 
-        scraped_data = pd.DataFrame(data_ls)
-        scraped_data.to_excel('./Data/Google_Patents_Data.xlsx')
+        scraped_data = pd.DataFrame([data_ls])
+        scraped_data.to_excel('./Data/Google_Patents_Data.xlsx', mode='a', header=None, index=False)
 
     # This is the main function that will scrape all data:
     def main(self):
@@ -110,10 +110,13 @@ class Google_Patent_Scraper():
         
         data_dir = os.listdir('./Data')
         print('\n--------- Old Files ---------\n', data_dir)
-        filename = 'Google_Patents_Data.xlsx'
-        if filename in data_dir:
-            os.remove('./Data/Google_Patents_Data.xlsx')
-        print('\n--------- Current Files ---------\n', os.listdir('./Data'))
+#         filename = 'Google_Patents_Data.xlsx'
+#         if filename in data_dir:
+#             os.remove('./Data/Google_Patents_Data.xlsx')
+#         print('\n--------- Current Files ---------\n', os.listdir('./Data'))
+        
+        scraped_data = pd.DataFrame([])
+        scraped_data.to_excel('./Data/Google_Patents_Data.xlsx')
 
         count = 0
         while len(all_details) <= 50:
@@ -217,12 +220,12 @@ class Google_Patent_Scraper():
                         "Description_Of_The_Embodiments": detail_desc
                     }
 
-                    all_details.append(dic)
+#                     all_details.append(dic)
                     
                     print('\n----------Title-----------\n', title)
                     print('\n----------P Num-----------\n', patent_num)
 
-                    self.save_data(all_details)
+                    self.save_data(dic)
                     
                     data_dir = os.listdir('./Data')
                     print('\n--------- Old Files ---------\n', data_dir)
