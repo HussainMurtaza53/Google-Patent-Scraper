@@ -108,8 +108,8 @@ class Google_Patent_Scraper():
         date, c_time = str(datetime.now()).split()
         print('\nStart Time: ', c_time, '\n')
         
-        os.remove('./Data/Google_Patents_Data.xlsx')
         print('\n--------- Current Files ---------\n', os.listdir('./Data'))
+        os.remove('./Data/Google_Patents_Data.xlsx')
 
         count = 0
         while len(all_details) <= 50:
