@@ -45,4 +45,5 @@ urllib3==1.26.14
 webdriver-manager==3.8.5
 whitenoise==6.3.0
 wsproto==1.2.0
+wordninja
 yarl==1.8.2
