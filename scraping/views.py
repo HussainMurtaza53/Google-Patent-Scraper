@@ -21,8 +21,8 @@ def google_patent(request):
 def google_patent_results(request):
     # with open('google_patent_results.json') as f:
     #     patents_data = json.load(f)
-    import os
-    print('\n--------- Files ---------\n', os.listdir('./Data'))
+#     import os
+#     print('\n--------- Files ---------\n', os.listdir('./Data'))
     data = pd.read_excel('./Data/Google_Patents_Data.xlsx')
     patents_data = []
     for d in range(len(data)):
