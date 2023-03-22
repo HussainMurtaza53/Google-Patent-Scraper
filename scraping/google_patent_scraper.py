@@ -211,7 +211,8 @@ class Google_Patent_Scraper():
 
                     all_details.append(dic)
                     
-                    # print('\n----------Dic-----------\n', dic)
+                    print('\n----------Title-----------\n', title)
+                    print('\n----------P Num-----------\n', patent_num)
 
                     self.save_data(all_details)
 
