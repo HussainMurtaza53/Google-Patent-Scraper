@@ -108,11 +108,11 @@ class Google_Patent_Scraper():
         date, c_time = str(datetime.now()).split()
         print('\nStart Time: ', c_time, '\n')
         
-        print('\n--------- Old Files ---------\n', os.listdir('./Data'))
-        try:
+        data_dir = os.listdir('./Data')
+        print('\n--------- Old Files ---------\n', data_dir)
+        filename = 'Google_Patents_Data.xlsx'
+        if filename in data_dir:
             os.remove('./Data/Google_Patents_Data.xlsx')
-        except:
-            pass
         print('\n--------- Current Files ---------\n', os.listdir('./Data'))
 
         count = 0
@@ -223,6 +223,9 @@ class Google_Patent_Scraper():
                     print('\n----------P Num-----------\n', patent_num)
 
                     self.save_data(all_details)
+                    
+                    data_dir = os.listdir('./Data')
+                    print('\n--------- Old Files ---------\n', data_dir)
 
                     # with open('google_patent_results.json', 'w') as outfile:
                     #     json.dump(all_details, outfile)
