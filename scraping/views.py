@@ -4,8 +4,10 @@ from django.http import HttpResponse
 import json
 import pandas as pd
 import io
+from scraping.models import *
+from django.http import HttpResponse
 
-
+    
 def google_patent(request):
     if request.method == 'GET':
         search = request.GET.get('search')
@@ -21,28 +23,30 @@ def google_patent(request):
 def google_patent_results(request):
     # with open('google_patent_results.json') as f:
     #     patents_data = json.load(f)
-#     import os
-#     print('\n--------- Files ---------\n', os.listdir('./Data'))
-    data = pd.read_excel('./Data/Google_Patents_Data.xlsx')
-    patents_data = []
-    for d in range(len(data)):
-        dic = {
-            "S_No": d+1,
-            "Title": data['Title'][d],
-            "Patent_Number": data['Patent_Number'][d],
-            "Abstract": data['Abstract'][d],
-            "Classification": data['Classification'][d],
-            "Claims": data['Claims'][d],
-            "Images": data['Images'][d],
-            "Description": data['Description'][d],
-            "Background": data['Background'][d],
-            "Summary": data['Summary'][d],
-            "Technical_Field": data['Technical_Field'][d],
-            "Description_Of_The_Drawings": data['Description_Of_The_Drawings'][d],
-            "Description_Of_The_Embodiments": data['Description_Of_The_Embodiments'][d]
-        }
+    
+    # data = pd.read_excel('./Data/Google_Patents_Data.xlsx')
+    # print('\n----------Data-----------\n', data)
+    data = Google_Patent.objects.values()
+    patents_data = list(map(lambda i, d: {**d, 'id': i+1}, range(len(data)), data))
+    # for d in range(len(data)):
+    #     dic = {
+    #         "S_No": d+1,
+    #         "Title": data['Title'][d],
+    #         "Patent_Number": data['Patent_Number'][d],
+    #         "Abstract": data['Abstract'][d],
+    #         "Classification": data['Classification'][d],
+    #         "Claims": data['Claims'][d],
+    #         "Images": data['Images'][d],
+    #         "Description": data['Description'][d],
+    #         "Background": data['Background'][d],
+    #         "Summary": data['Summary'][d],
+    #         "Technical_Field": data['Technical_Field'][d],
+    #         "Description_Of_The_Drawings": data['Description_Of_The_Drawings'][d],
+    #         "Description_Of_The_Embodiments": data['Description_Of_The_Embodiments'][d]
+    #     }
 
-        patents_data.append(dic)
+    #     patents_data.append(dic)
+    # print('\n----------Data LS-----------\n', patents_data)
     context = {
         'patents': patents_data,
         'length': len(patents_data),
@@ -53,12 +57,8 @@ def google_patent_results(request):
 def google_patent_results_download(request):
     try:
         data_name = 'Google_Patents_Data.xlsx'
-        data = pd.read_excel('./Data/{0}'.format(data_name))
-
-        try:
-            del data['Unnamed: 0']
-        except:
-            pass
+        patents_data = Google_Patent.objects.values()
+        data = pd.DataFrame(patents_data)
 
         # writer.writerow(["Title", "Patent_Number", "Abstract", "Classification", "Claims", "Images", "Description", "Background", "Summary", "Technical_Field", "Description_Of_The_Drawings", "Description_Of_The_Embodiments"])
         

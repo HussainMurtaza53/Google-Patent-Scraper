@@ -26,6 +26,8 @@ SECRET_KEY = "django-insecure-mjcqtz1#)+_x8*9n!6ge)exrz!w^*%_#!sgr-+xy$6)urvwpj0
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+BASE_URL = "https://google-patent.herokuapp.com"
+
 ALLOWED_HOSTS = ["*"]
 
 
@@ -76,9 +78,17 @@ WSGI_APPLICATION = "google_patent_scraper.wsgi.application"
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+    # "default": {
+    #     "ENGINE": "django.db.backends.sqlite3",
+    #     "NAME": BASE_DIR / "db.sqlite3",
+    # }
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'dc14bd79vql0eq',
+        'USER': 'wbynhmaxihckvs',
+        'PASSWORD': '885b060db8e143347b74db55193b7dd28826e92b705f762f2c61c25e84e722b3',
+        'HOST': 'ec2-54-173-77-184.compute-1.amazonaws.com',
+        'PORT': '5432',
     }
 }
 

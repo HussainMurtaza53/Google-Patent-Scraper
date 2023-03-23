@@ -5,7 +5,8 @@ from bs4 import BeautifulSoup
 import pandas as pd
 import requests
 import wordninja
-import os
+from google_patent_scraper.settings import BASE_URL
+from scraping.models import *
 
 
 class Google_Patent_Scraper():
@@ -107,19 +108,9 @@ class Google_Patent_Scraper():
 
         date, c_time = str(datetime.now()).split()
         print('\nStart Time: ', c_time, '\n')
-        
-#         data_dir = os.listdir('./Data')
-#         print('\n--------- Old Files ---------\n', data_dir)
-#         filename = 'Google_Patents_Data.xlsx'
-#         if filename in data_dir:
-#             os.remove('./Data/Google_Patents_Data.xlsx')
-#         print('\n--------- Current Files ---------\n', os.listdir('./Data'))
-        
-#         scraped_data = pd.DataFrame([])
-#         scraped_data.to_excel('./Data/Google_Patents_Data.xlsx')
-        
-#         data_dir = os.listdir('./Data')
-#         print('\n--------- Old Files ---------\n', data_dir)
+
+        # Delete old records before adding new one:
+        Google_Patent.objects.all().delete()
 
         count = 0
         while len(all_details) <= 50:
@@ -206,37 +197,35 @@ class Google_Patent_Scraper():
                         except:
                             description = self.get_description('background', all_headings, soup)
                     except:
-                        description = "{0}\n{1}\n{2}\n{3}\n{4}".format(background, summary, tech_field, drawing, detail_desc)
+                        description = "{0}\n{1}\n{2}\n{3}\n{4}".format(background, summary, tech_field, drawing, detail_desc).replace('None', '')
                     
                     dic = {
-                        "Title": title,
-                        "Patent_Number": patent_num,
-                        "Abstract": abstract,
-                        "Classification": classification,
-                        "Claims": claims,
-                        "Images": images,
-                        "Description": description,
-                        "Background": background,
-                        "Summary": summary,
-                        "Technical_Field": tech_field,
-                        "Description_Of_The_Drawings": drawing,
-                        "Description_Of_The_Embodiments": detail_desc
+                        "title": title,
+                        "patent_num": patent_num,
+                        "abstract": abstract,
+                        "classification": classification,
+                        "claims": claims,
+                        "images": images,
+                        "description": description,
+                        "background": background,
+                        "summary": summary,
+                        "tech_field": tech_field,
+                        "drawing": drawing,
+                        "detail_desc": detail_desc
                     }
 
                     all_details.append(dic)
                     
-                    print('\n----------Title-----------\n', title)
-                    print('\n----------P Num-----------\n', patent_num)
+                    # print('\n----------Dic-----------\n', dic)
 
-                    self.save_data(all_details)
-                    
-#                     data_dir = os.listdir('./Data')
-#                     print('\n--------- Old Files ---------\n', data_dir)
+                    # self.save_data(all_details)
 
                     # with open('google_patent_results.json', 'w') as outfile:
                     #     json.dump(all_details, outfile)
             
             count += 10
+        
+        Google_Patent.objects.bulk_create([Google_Patent(**item) for item in all_details])
         
         date, c_time = str(datetime.now()).split()
         print('\nEnd Time: ', c_time, '\n')

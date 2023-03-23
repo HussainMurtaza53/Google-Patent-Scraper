@@ -95,19 +95,19 @@
                                 <tbody>
                                     {% for p in patents %}
                                         <tr>
-                                            <th scope="row">{{p.S_No}}</th>
-                                            <td>{{p.Title}}</td>
-                                            <td>{{p.Patent_Number}}</td>
-                                            <td>{{p.Abstract}}</td>
-                                            <td>{{p.Classification}}</td>
-                                            <td>{{p.Claims}}</td>
-                                            <td>{{p.Images}}</td>
-                                            <td>{{p.Description}}</td>
-                                            <td>{{p.Background}}</td>
-                                            <td>{{p.Summary}}</td>
-                                            <td>{{p.Technical_Field}}</td>
-                                            <td>{{p.Description_Of_The_Drawings}}</td>
-                                            <td>{{p.Description_Of_The_Embodiments}}</td>
+                                            <th scope="row">{{p.id}}</th>
+                                            <td>{{p.title}}</td>
+                                            <td>{{p.patent_num}}</td>
+                                            <td>{{p.abstract}}</td>
+                                            <td>{{p.classification}}</td>
+                                            <td>{{p.claims}}</td>
+                                            <td>{{p.images}}</td>
+                                            <td>{{p.description}}</td>
+                                            <td>{{p.background}}</td>
+                                            <td>{{p.summary}}</td>
+                                            <td>{{p.tech_field}}</td>
+                                            <td>{{p.drawing}}</td>
+                                            <td>{{p.detail_desc}}</td>
                                         </tr>
                                     {% endfor %}
                                 </tbody>
@@ -205,7 +205,7 @@
                     progress.style.display = "none";
                     resultsButton.style.display = "block";
                 }
-            }, 5000);
+            }, 4000);
         };
 
         function view_results() {
