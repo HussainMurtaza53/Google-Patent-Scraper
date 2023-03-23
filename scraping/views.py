@@ -59,6 +59,11 @@ def google_patent_results_download(request):
         data_name = 'Google_Patents_Data.xlsx'
         patents_data = Google_Patent.objects.values()
         data = pd.DataFrame(patents_data)
+        
+        try:
+            del data['id']
+        except:
+            pass
 
         # writer.writerow(["Title", "Patent_Number", "Abstract", "Classification", "Claims", "Images", "Description", "Background", "Summary", "Technical_Field", "Description_Of_The_Drawings", "Description_Of_The_Embodiments"])
         
