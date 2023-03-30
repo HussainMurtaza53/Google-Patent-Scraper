@@ -64,7 +64,8 @@ class Google_Patent_Scraper():
         return all_headings
     
     def get_soup(self, url):
-        response = requests.get(url)
+        headers = {'cookie': '__Secure-ENID=10.SE=hlDtQzEMJzWymOz3ezum_ZQS1Yjl7G40w1jeBYl-4B_feoDc36PoiHF_wl60fvW1ZcHqD5KOC3CCaX40XwUAq15FTfHvIbWtp1Zheae06V45XynIXKU3iGIt2OrcpBxpF6n-MSVHeuaefcrBgg-RaLEysAAvohKrUfIpONdDjBXVflsoOliTwQ6kMD6cS7sOsHAvzetwxl43de9o2scmn2a-Q_34NAqfwNlK0IgSI_Gn7GU0KqwWp5fD8mVgZs0sOgWnjyIvKoo; OTZ=6926995_36_36__36_; SID=UghsxYl0TwcnMtpEZZOsLho-joQFZWpzndDBPlj6orFuRJ62zKc0Wsq6O3ulJV1VdeZkTA.; __Secure-1PSID=UghsxYl0TwcnMtpEZZOsLho-joQFZWpzndDBPlj6orFuRJ62R0HKqhk0OxiMeVmcApCLvw.; __Secure-3PSID=UghsxYl0TwcnMtpEZZOsLho-joQFZWpzndDBPlj6orFuRJ62vuvyfK0O0k1QNRaFnPbraQ.; HSID=AIhtHsvsq0O8C9k_V; SSID=AVuPk60YQJCXG6zOV; APISID=T08G_TffT9UFBZpz/AN1S9wjtKgFeV20oU; SAPISID=-kOcgwr_Yp6faRrL/AZpqxTB3w6eMPKAnC; __Secure-1PAPISID=-kOcgwr_Yp6faRrL/AZpqxTB3w6eMPKAnC; __Secure-3PAPISID=-kOcgwr_Yp6faRrL/AZpqxTB3w6eMPKAnC; OGPC=19034156-1:; SEARCH_SAMESITE=CgQI9ZcB; AEC=AUEFqZc1Lw-MEXMzWhlo_Shj-uPl8yRR7OzQ7vLXjApLoEop6nz1c1JS09s; 1P_JAR=2023-03-30-10; DV=o5bJJsq5QGRXcC38Z5-bAliQTfUgc9iJV5getGLfKQEAAAAifm2YC1-e_QAAAAgH7s-UDNE6QAAAAIERQZTJUS0dEgAAAA; NID=511=JfJu5KYeObun-fVOq7n8Em7eBxXC-g6iRJTTOi_G06caudUtQrs1j7FRtdsEfLQbUieMz9dnFnGzyvaazJ4kN_1fk5sfNq_d_qkrf3l3kzhtfEd3Cbkkx4rXeosN_OvgFAq7fAnNV3kGnWn6p4T_p5ZeDCeOZugEnSkEXn6pUm45UoTZ_17r-4MpvJIhTS3IYY4z3cAIxLpL15-ed4VQjdxQv7MT1oDD99xMpWHHZ-Ko4nK-xu7Z3__HAUR36h2hjoCrdbyC5WIrpgQZk4tKo68xoNA7E4NcT-TnKXE6i8NEsGXos2nxbA; SIDCC=AFvIBn9lBi9yKbvAuE-K29u6CLwyj4xdIZHOOoEcGW-9Vv4hPdr6LSJfVwSHtWki2Gyr1dTJoivl; __Secure-1PSIDCC=AFvIBn_bnqYlbqQqCQrNXR4VmKFr0-HPwtTTSwNzblpor4gB5CVZGUjEJemQguE5gmU7mg8fs1lM; __Secure-3PSIDCC=AFvIBn-inOovvoNn3dBZeoGHLe5HV4-r_yBgislJkBmvka-rk8lMMt2VlzPturAx2meEnO4BbRU7'}
+        response = requests.get(url, headers=headers)
         soup = BeautifulSoup(response.content, 'html.parser')
         return soup
 
@@ -108,17 +109,20 @@ class Google_Patent_Scraper():
 
         date, c_time = str(datetime.now()).split()
         print('\nStart Time: ', c_time, '\n')
-
+        
         # Delete old records before adding new one:
-        Google_Patent.objects.all().delete()
+        # Google_Patent.objects.all().delete()
 
         count = 0
-        while len(all_details) <= 50:
+        while len(all_details) < 50:
             url = self.main_url.format(self.search, count)
             soup = self.get_soup(url)
             all_ref_num = self.get_all_ref_num(soup)
             
             for num in tqdm(range(len(all_ref_num))):
+                if len(all_details) == 50:
+                    break
+                
                 patent_url = 'https://patents.google.com/patent/{0}?oq={1}'.format(all_ref_num[num], self.search)
                 soup = self.get_soup(patent_url)
                 all_headings = self.get_all_headings(soup)
@@ -215,6 +219,8 @@ class Google_Patent_Scraper():
                     }
 
                     all_details.append(dic)
+
+                    Google_Patent.objects.create(**dic)
                     
                     # print('\n----------Dic-----------\n', dic)
 
@@ -225,7 +231,7 @@ class Google_Patent_Scraper():
             
             count += 10
         
-        Google_Patent.objects.bulk_create([Google_Patent(**item) for item in all_details])
+        # Google_Patent.objects.bulk_create([Google_Patent(**item) for item in all_details])
         
         date, c_time = str(datetime.now()).split()
         print('\nEnd Time: ', c_time, '\n')

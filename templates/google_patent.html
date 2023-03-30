@@ -34,6 +34,8 @@
                                     </button>
                                 </div>
                             </div>
+                            <br>
+                            <h4 class="starting" style="text-align: center; display: none;">Google Patent Scraping Started</h4>
                         </div>
                         <br>
                         <!-- <a><button style="display: none;" id="resultsButton" class="resultsButton" onclick="view_results()">View Results</button></a> -->
@@ -45,12 +47,13 @@
                             <div class="col-xs-2 text-left">
                                 <a href="/google_patent_results_download"><button type="button" class="btn btn-outline-primary downloadButton" style="{{ style }}" id="downloadButton">Download Data</button></a>
                             </div>
-                            <div class="col-xs-6 text-right">   
-                                <a href="/google_patent_results"><button type="button" class="btn btn-outline-primary resultsButton" style="display: none;" id="resultsButton">View Results</button></a>
-                            </div>
+                            <!-- <div class="col-xs-6 text-right">    -->
+                                <!-- <a><button type="button" class="btn btn-outline-primary resultsButton" id="resultsButton" onclick="view_results()">View Results</button></a> -->
+                                <!-- <a href="/google_patent_results"><button type="button" class="btn btn-outline-primary resultsButton" style="display: none;" id="resultsButton" onclick="view_results()">View Results</button></a> -->
+                            <!-- </div> -->
                         </div>
-                        <!-- <div id="ajax_updated" style="max-height: 684px; overflow: auto; white-space: nowrap; margin-top: 18px;">
-                            <table class="table table-bordered">
+                        <div id="ajax_updated" style="max-height: 684px; overflow: auto; white-space: nowrap; margin-top: 18px;">
+                            <table id="my-table" class="table table-bordered">
                                 <thead>
                                     <tr>
                                         <th scope="col">S.No</th>
@@ -68,11 +71,11 @@
                                         <th scope="col">Description of the Embodiments</th>
                                     </tr>
                                 </thead>
-                                <tbody>
-                                </tbody>
+                                <tbody></tbody>
                             </table>
-                        </div> -->
-                        {% if patents %}
+                        </div>
+                        
+                        <!-- {% if patents %}
                         <div id="ajax_updated" style="max-height: 684px; overflow: auto; white-space: nowrap; margin-top: 18px;">
                             <table class="table table-bordered">
                                 <thead>
@@ -113,7 +116,7 @@
                                 </tbody>
                             </table>
                         </div>
-                        {% endif %}
+                        {% endif %} -->
                     </div>
                 </div>
             </div>
@@ -181,6 +184,8 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1 /jquery.min.js"></script>
     <script>
         function start() {
+            var starting = document.getElementsByClassName("starting")[0];
+            starting.style.display = "block";
             search = document.getElementById('search').value
             $.get('/', {search: search}, function(json_response) {
             });
@@ -189,7 +194,7 @@
             
             // new
             var progress = document.getElementsByClassName("progress")[0];
-            var resultsButton = document.getElementsByClassName("resultsButton")[0]; //can use ids instead
+            // var resultsButton = document.getElementsByClassName("resultsButton")[0]; //can use ids instead
             var downloadButton = document.getElementsByClassName("downloadButton")[0];
             // end
             
@@ -203,26 +208,90 @@
                 if (current_progress >= 101) {
                     clearInterval(interval);
                     progress.style.display = "none";
-                    resultsButton.style.display = "block";
+                    starting.style.display = "none";
+                    // resultsButton.style.display = "block";
                 }
-            }, 4500);
+            }, 11000);
         };
 
-        function view_results() {
-            $.get('/google_patent_results', {}, function(json_response) {
-                var patents = json_response["patents"]
-                if (patents) {
-                    for (var i = 0; i < patents.length; i++) {
-                        $('tbody').append("<tr><th scope=\"row\">" + patents[i].S_No + "</th><td>" + patents[i].Title + "</td><td>" + patents[i].Patent_Number + "</td><td>" + patents[i].Abstract + "</td><td>" + patents[i].Classification + "</td><td>" + patents[i].Claims + "</td><td>" + patents[i].Images + "</td><td>" + patents[i].Description + "</td><td>" + patents[i].Background + "</td><td>" + patents[i].Summary + "</td><td>" + patents[i].Technical_Field + "</td><td>" + patents[i].Description_Of_The_Drawings + "</td><td>" + patents[i].Description_Of_The_Embodiments + "</td></tr>")
-                    }
-                }
-            });
-            document.getElementById("resultsButton").disabled = true;
-        };
+        // function view_results() {
+        //     $.get('/google_patent_results', {}, function(json_response) {
+        //         // debugger
+        //         var patents = json_response["patents"]
+        //         if (patents) {
+        //             for (var i = 0; i < patents.length; i++) {
+        //                 // $('tbody').append("<tr><th scope=\"row\">" + patents[i].S_No + "</th><td>" + patents[i].Title + "</td><td>" + patents[i].Patent_Number + "</td><td>" + patents[i].Abstract + "</td><td>" + patents[i].Classification + "</td><td>" + patents[i].Claims + "</td><td>" + patents[i].Images + "</td><td>" + patents[i].Description + "</td><td>" + patents[i].Background + "</td><td>" + patents[i].Summary + "</td><td>" + patents[i].Technical_Field + "</td><td>" + patents[i].Description_Of_The_Drawings + "</td><td>" + patents[i].Description_Of_The_Embodiments + "</td></tr>")
+        //                 var row = '<tr>';
+        //                 row += '<td>' + patents[i].id + '</td>';
+        //                 row += '<td>' + patents[i].title + '</td>';
+        //                 row += '<td>' + patents[i].patent_num + '</td>';
+        //                 row += '<td>' + patents[i].abstract + '</td>';
+        //                 row += '<td>' + patents[i].classification + '</td>';
+        //                 row += '<td>' + patents[i].claims + '</td>';
+        //                 row += '<td>' + patents[i].images + '</td>';
+        //                 row += '<td>' + patents[i].description + '</td>';
+        //                 row += '<td>' + patents[i].background + '</td>';
+        //                 row += '<td>' + patents[i].summary + '</td>';
+        //                 row += '<td>' + patents[i].tech_field + '</td>';
+        //                 row += '<td>' + patents[i].drawing + '</td>';
+        //                 row += '<td>' + patents[i].detail_desc + '</td>';
+        //                 // Add more columns as needed
+        //                 row += '</tr>';
+        //                 $('#my-table tbody').append(row);
+        //             }
+        //         }
+        //     });
+        //     // document.getElementById("resultsButton").disabled = true;
+        // };
         
         // function download() {
         //     $.get('/google_patent_results_download', {}, function(json_response) {});
         // };
+    </script>
+    <script>
+        var latestRowId = 0;
+        function scrapeData() {
+            $.ajax({
+                url: "{% url 'scrape_data' %}",
+                type: "GET",
+                success: function(data) {
+                    var tbody = $('#my-table tbody');
+                    var loaded = tbody.attr('data-loaded') == 'true';
+
+                    // Iterate over the scraped data and append new rows to the table
+                    $.each(data, function(index, row) {
+                        if (row.id > latestRowId) {
+                            var rowHtml = '<tr>';
+                            rowHtml += '<td>' + row.id + '</td>';
+                            rowHtml += '<td>' + row.title + '</td>';
+                            rowHtml += '<td>' + row.patent_num + '</td>';
+                            rowHtml += '<td>' + row.abstract + '</td>';
+                            rowHtml += '<td>' + row.classification + '</td>';
+                            rowHtml += '<td>' + row.claims + '</td>';
+                            rowHtml += '<td>' + row.images + '</td>';
+                            rowHtml += '<td>' + row.description + '</td>';
+                            rowHtml += '<td>' + row.background + '</td>';
+                            rowHtml += '<td>' + row.summary + '</td>';
+                            rowHtml += '<td>' + row.tech_field + '</td>';
+                            rowHtml += '<td>' + row.drawing + '</td>';
+                            rowHtml += '<td>' + row.detail_desc + '</td>';
+                            // Add more columns as needed
+                            rowHtml += '</tr>';
+                            $('#my-table tbody').append(rowHtml);
+                            latestRowId = row.id;
+                        }
+                    });
+                    // Call the function again after some delay to get more data
+                    // setTimeout(scrapeData, 1000);
+                }
+            });
+        }
+        
+        $(document).ready(function() {
+            // Call the scrapeData function to start scraping
+            scrapeData();
+            setInterval(scrapeData, 4000);
+        });
     </script>
 </body>
 

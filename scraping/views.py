@@ -1,15 +1,15 @@
 from django.shortcuts import render
 from scraping.thread import *
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 import json
 import pandas as pd
 import io
 from scraping.models import *
-from django.http import HttpResponse
 
     
 def google_patent(request):
     if request.method == 'GET':
+        Google_Patent.objects.all().delete()
         search = request.GET.get('search')
         if search:
             Google_Patent_Scraper_Thread(search).start()
@@ -54,12 +54,18 @@ def google_patent_results(request):
     }
     return render(request, 'google_patent.html', context)
 
+def scrape_data(request):
+    # Scrape the data and return it as a JSON response
+    data = Google_Patent.objects.values()
+    patents_data = list(map(lambda i, d: {**d, 'id': i+1}, range(len(data)), data))
+    return JsonResponse(patents_data, safe=False)
+
 def google_patent_results_download(request):
     try:
         data_name = 'Google_Patents_Data.xlsx'
         patents_data = Google_Patent.objects.values()
         data = pd.DataFrame(patents_data)
-        
+
         try:
             del data['id']
         except:
