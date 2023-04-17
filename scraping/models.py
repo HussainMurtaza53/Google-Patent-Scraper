@@ -2,6 +2,9 @@ from django.db import models
 
 # Create your models here.
 class Google_Patent(models.Model):
+    assignee = models.CharField(max_length = 250, blank = True, null = True)
+    inventor = models.CharField(max_length = 250, blank = True, null = True)
+    date = models.CharField(max_length = 250, blank = True, null = True)
     title = models.CharField(max_length = 250, blank = True, null = True)
     patent_num = models.CharField(max_length = 250, blank = True, null = True)
     abstract = models.TextField(blank = True, null = True)

@@ -1,1 +1,1 @@
-web: gunicorn google_patent_scraper.wsgi
+web: gunicorn google_patent_scraper_project.wsgi

@@ -1,0 +1,45 @@
+<script>
+    var latestRowId = 0;
+    function scrapeData() {
+        $.ajax({
+            url: "{% url 'scrape_data' %}",
+            type: "GET",
+            success: function(data) {
+                var tbody = $('#my-table tbody');
+                var loaded = tbody.attr('data-loaded') == 'true';
+
+                // Iterate over the scraped data and append new rows to the table
+                $.each(data, function(index, row) {
+                    if (row.id > latestRowId) {
+                        var rowHtml = '<tr>';
+                        rowHtml += '<td>' + row.id + '</td>';
+                        rowHtml += '<td>' + row.title + '</td>';
+                        rowHtml += '<td>' + row.patent_num + '</td>';
+                        rowHtml += '<td>' + row.abstract + '</td>';
+                        rowHtml += '<td>' + row.classification + '</td>';
+                        rowHtml += '<td>' + row.claims + '</td>';
+                        rowHtml += '<td>' + row.images + '</td>';
+                        rowHtml += '<td>' + row.description + '</td>';
+                        rowHtml += '<td>' + row.background + '</td>';
+                        rowHtml += '<td>' + row.summary + '</td>';
+                        rowHtml += '<td>' + row.tech_field + '</td>';
+                        rowHtml += '<td>' + row.drawing + '</td>';
+                        rowHtml += '<td>' + row.detail_desc + '</td>';
+                        // Add more columns as needed
+                        rowHtml += '</tr>';
+                        $('#my-table tbody').append(rowHtml);
+                        latestRowId = row.id;
+                    }
+                });
+                // Call the function again after some delay to get more data
+                // setTimeout(scrapeData, 1000);
+            }
+        });
+    }
+    
+    $(document).ready(function() {
+        // Call the scrapeData function to start scraping
+        scrapeData();
+        setInterval(scrapeData, 4000);
+    });
+</script>
