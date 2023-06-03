@@ -1,6 +1,8 @@
 from django.shortcuts import render
 from scraping.thread import *
 from django.http import HttpResponse, JsonResponse
+from rest_framework.views import APIView
+from rest_framework.response import Response
 import json
 import pandas as pd
 import io
@@ -54,7 +56,7 @@ def google_patent_results(request):
     }
     return render(request, 'google_patent.html', context)
 
-def scrape_data(request):
+def scraped_data(request):
     # Scrape the data and return it as a JSON response
     data = Google_Patent.objects.values()
     patents_data = list(map(lambda i, d: {**d, 'id': i+1}, range(len(data)), data))
@@ -86,3 +88,16 @@ def google_patent_results_download(request):
         context = {'message': 'Fail'}
         return HttpResponse(json.dumps(context),
                 content_type = 'application/json')
+
+
+class Start_Patent_Scraper(APIView):
+
+    def get(self, request, *args, **kwargs):
+        
+        Google_Patent.objects.all().delete()
+        search = str(self.request).split('/')[-2].replace('%20', ' ')
+        context = {'message': 'Enter a valid search'}
+        if search:
+            Google_Patent_Scraper_Thread(search).start()
+            context = {'message': 'scraper started'}
+        return Response(context)

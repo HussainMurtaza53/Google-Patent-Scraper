@@ -2,7 +2,7 @@
     var latestRowId = 0;
     function scrapeData() {
         $.ajax({
-            url: "{% url 'scrape_data' %}",
+            url: "{% url 'scraped_data' %}",
             type: "GET",
             success: function(data) {
                 var tbody = $('#my-table tbody');
@@ -43,3 +43,693 @@
         setInterval(scrapeData, 4000);
     });
 </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>Search Results - Google Patent</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
+    <link href="https://netdna.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://netdna.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+    <script src="https://code.jquery.com/jquery.min.js"></script>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+
+    <!-- <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous"> -->
+
+    <!-- jQuery and Bootstrap JS -->
+    <!-- <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script> -->
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script> -->
+    <!-- <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script> -->
+</head>
+
+<body>
+    <!-- <nav class="navbar navbar-expand-lg navbar-dark bg-primary" style="background-color: slategray;">
+        <a class="navbar-brand" href="/" style="color: black;">Google Scholar</a>
+        <a class="navbar-brand" href="/google_patent" style="color: black;">Google Patents</a>
+    </nav> -->
+    
+    <div class="container bootstrap snippets bootdey">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="ibox float-e-margins">
+                    <div class="ibox-content">
+                        <div class="search-form">
+                            <div class="input-group">
+                                <input type="text" placeholder="Search for patents here..." name="search" id="search"
+                                    onkeyup="success()" class="form-control input-lg">
+                                <div class="input-group-btn">
+                                    <button class="btn btn-lg btn-primary" id="submit" onclick="start()">
+                                        Search
+                                    </button>
+                                </div>
+                            </div>
+                            <br>
+                            <h4 class="starting" style="text-align: center; display: none;">Google Patent Scraping Started</h4>
+                        </div>
+                        <br>
+                        <!-- <a><button style="display: none;" id="resultsButton" class="resultsButton" onclick="view_results()">View Results</button></a> -->
+                        <div class="progress" style="height: 23px; margin-bottom: 3px;">
+                            <div id="dynamic" class="progress-bar progress-bar-success progress-bar-striped active" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%"></div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-xs-2 text-left">
+                                <a href="/google_patent_results_download"><button type="button" class="btn btn-outline-primary downloadButton" style="{{ style }}" id="downloadButton">Download Data</button></a>
+                            </div>
+                            <!-- <div class="col-xs-6 text-right">    -->
+                                <!-- <a><button type="button" class="btn btn-outline-primary resultsButton" id="resultsButton" onclick="view_results()">View Results</button></a> -->
+                                <!-- <a href="/google_patent_results"><button type="button" class="btn btn-outline-primary resultsButton" style="display: none;" id="resultsButton" onclick="view_results()">View Results</button></a> -->
+                            <!-- </div> -->
+                        </div>
+
+
+                        <div id="patent_dynamic_desc"></div>
+
+
+                        <!-- <div class="container">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <p><i class="glyphicon glyphicon glyphicon-link  glyphicon glyphicon-th  glyphicon glyphicon-user  glyphicon glyphicon-calendar"></i> p1</p>
+                                </div>
+                                <div class="col-md-3">
+                                    <p><span class="icon"></span>p2</p>
+                                </div>
+                                <div class="col-md-3">
+                                    <p><span class="icon"></span>p3</p>
+                                </div>
+                                <div class="col-md-3">
+                                    <p><span class="icon"></span>p4</p>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <img src="https://placehold.it/300x300" alt="Image" class="img-thumbnail">
+                                    <button type="button" class="btn btn-primary btn-block" data-toggle="modal" data-target="#imageModal">Show all drawings</button>
+                                </div>
+                                <div class="modal fade" id="imageModal" tabindex="-1" role="dialog" aria-labelledby="imageModalLabel" aria-hidden="true">
+                                    <div class="modal-dialog modal-lg" role="document">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="imageModalLabel">All Drawings</h5>
+                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                    <span aria-hidden="true">&times;</span>
+                                                </button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <div id="carouselExampleIndicators" class="carousel slide" data-ride="carousel">
+                                                    <ol class="carousel-indicators">
+                                                        <li data-target="#carouselExampleIndicators" data-slide-to="0" class="active"></li>
+                                                        <li data-target="#carouselExampleIndicators" data-slide-to="1"></li>
+                                                        <li data-target="#carouselExampleIndicators" data-slide-to="2"></li>
+                                                    </ol>
+                                                    <div class="carousel-inner">
+                                                        <div class="carousel-item active">
+                                                            <img src="https://placehold.it/300x300" class="d-block w-100" alt="First slide">
+                                                        </div>
+                                                        <div class="carousel-item">
+                                                            <img src="https://placehold.it/300x300" class="d-block w-100" alt="Second slide">
+                                                        </div>
+                                                        <div class="carousel-item">
+                                                            <img src="https://placehold.it/300x300" class="d-block w-100" alt="Third slide">
+                                                        </div>
+                                                    </div>
+                                                    <a class="carousel-control-prev" href="#carouselExampleIndicators" role="button" data-slide="prev">
+                                                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                                        <span class="sr-only">Previous</span>
+                                                    </a>
+                                                    <a class="carousel-control-next" href="#carouselExampleIndicators" role="button" data-slide="next">
+                                                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                                        <span class="sr-only">Next</span>
+                                                    </a>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="modal fade" id="imageModal" tabindex="-1" role="dialog" aria-labelledby="imageModalLabel" aria-hidden="true">
+                                    <div class="modal-dialog modal-lg" role="document">
+                                      <div class="modal-content">
+                                        <div class="modal-header">
+                                          <h5 class="modal-title" id="imageModalLabel">All Images</h5>
+                                          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                          </button>
+                                        </div>
+                                        <div class="modal-body">
+                                          <div class="row">
+                                            <div class="col-md-3">
+                                              <img src="https://placehold.it/300x300" alt="Image" class="img-thumbnail">
+                                            </div>
+                                            <div class="col-md-3">
+                                              <img src="https://placehold.it/300x300" alt="Image" class="img-thumbnail">
+                                            </div>
+                                            <div class="col-md-3">
+                                              <img src="https://placehold.it/300x300" alt="Image" class="img-thumbnail">
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                <div class="col-md-9" style="width: 820px;">
+                                    <ul class="nav nav-tabs">
+                                        <li class="nav-item">
+                                            <a class="nav-link active" href="#abstract" data-toggle="tab">Abstract</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" href="#classification" data-toggle="tab">Classification</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" href="#description" data-toggle="tab">Description</a>
+                                        </li>
+                                    </ul>
+                                    <div class="tab-content">
+                                        <div class="tab-pane fade show active" id="abstract">
+                                            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus imperdiet, nulla et dictum interdum, nisi lorem egestas vitae scel <span id="dots">...</span><span id="more" style="display: none;">erisque enim ligula venenatis dolor. Maecenas nisl est, ultrices nec congue eget, auctor vitae massa. Fusce luctus vestibulum augue ut aliquet. Nunc sagittis dictum nisi, sed ullamcorper ipsum dignissim ac. In at libero sed nunc venenatis imperdiet sed ornare turpis. Donec vitae dui eget tellus gravida venenatis. Integer fringilla congue eros non fermentum. Sed dapibus pulvinar nibh tempor porta.</span></p>
+                                            <button onclick="myFunction()" id="read_more">Read more</button>
+                                        </div>
+                                        <div class="tab-pane fade" id="classification">
+                                            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus imperdiet, nulla et dictum interdum, nisi lorem egestas vitae scel <span id="dots">...</span><span id="more">erisque enim ligula venenatis dolor. Maecenas nisl est, ultrices nec congue eget, auctor vitae massa. Fusce luctus vestibulum augue ut aliquet. Nunc sagittis dictum nisi, sed ullamcorper ipsum dignissim ac. In at libero sed nunc venenatis imperdiet sed ornare turpis. Donec vitae dui eget tellus gravida venenatis. Integer fringilla congue eros non fermentum. Sed dapibus pulvinar nibh tempor porta.</span></p>
+                                            <button onclick="myFunction()" id="read_more">Read more</button>
+                                        </div>
+                                        <div class="tab-pane fade" id="description">
+                                            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus imperdiet, nulla et dictum interdum, nisi lorem egestas vitae scel <span id="dots">...</span><span id="more">erisque enim ligula venenatis dolor. Maecenas nisl est, ultrices nec congue eget, auctor vitae massa. Fusce luctus vestibulum augue ut aliquet. Nunc sagittis dictum nisi, sed ullamcorper ipsum dignissim ac. In at libero sed nunc venenatis imperdiet sed ornare turpis. Donec vitae dui eget tellus gravida venenatis. Integer fringilla congue eros non fermentum. Sed dapibus pulvinar nibh tempor porta.</span></p>
+                                            <button onclick="myFunction()" id="read_more">Read more</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div> -->
+
+
+
+
+                        <!-- <div id="ajax_updated" style="max-height: 684px; overflow: auto; white-space: nowrap; margin-top: 18px;">
+                            <table id="my-table" class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">S.No</th>
+                                        <th scope="col">Title</th>
+                                        <th scope="col">Patent Number</th>
+                                        <th scope="col">Abstract</th>
+                                        <th scope="col">Classification</th>
+                                        <th scope="col">Claims</th>
+                                        <th scope="col">Images</th>
+                                        <th scope="col">Description</th>
+                                        <th scope="col">Background</th>
+                                        <th scope="col">Summary</th>
+                                        <th scope="col">Technical Field</th>
+                                        <th scope="col">Description of the Drawings</th>
+                                        <th scope="col">Description of the Embodiments</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div> -->
+                        
+                        <!-- {% if patents %}
+                        <div id="ajax_updated" style="max-height: 684px; overflow: auto; white-space: nowrap; margin-top: 18px;">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">S.No</th>
+                                        <th scope="col">Title</th>
+                                        <th scope="col">Patent Number</th>
+                                        <th scope="col">Abstract</th>
+                                        <th scope="col">Classification</th>
+                                        <th scope="col">Claims</th>
+                                        <th scope="col">Images</th>
+                                        <th scope="col">Description</th>
+                                        <th scope="col">Background</th>
+                                        <th scope="col">Summary</th>
+                                        <th scope="col">Technical Field</th>
+                                        <th scope="col">Description of the Drawings</th>
+                                        <th scope="col">Description of the Embodiments</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for p in patents %}
+                                        <tr>
+                                            <th scope="row">{{p.id}}</th>
+                                            <td>{{p.title}}</td>
+                                            <td>{{p.patent_num}}</td>
+                                            <td>{{p.abstract}}</td>
+                                            <td>{{p.classification}}</td>
+                                            <td>{{p.claims}}</td>
+                                            <td>{{p.images}}</td>
+                                            <td>{{p.description}}</td>
+                                            <td>{{p.background}}</td>
+                                            <td>{{p.summary}}</td>
+                                            <td>{{p.tech_field}}</td>
+                                            <td>{{p.drawing}}</td>
+                                            <td>{{p.detail_desc}}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% endif %} -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <style type="text/css">
+        body {
+            background: #eee;
+            font-size: 16px;
+        }
+
+        .ibox-content {
+            background-color: #FFFFFF;
+            color: inherit;
+            padding: 15px 20px 20px 20px;
+            border-color: #E7EAEC;
+            border-image: none;
+            border-style: solid solid none;
+            border-width: 1px 0px;
+        }
+
+        .search-form {
+            margin-top: 10px;
+        }
+
+        .search-result h3 {
+            margin-bottom: 0;
+            color: #1E0FBE;
+        }
+
+        .search-result .search-link {
+            color: #006621;
+        }
+
+        .search-result p {
+            font-size: 16px;
+            margin-top: 5px;
+        }
+
+        .hr-line-dashed {
+            border-top: 1px dashed #E7EAEC;
+            color: #ffffff;
+            background-color: #ffffff;
+            height: 1px;
+            margin: 20px 0;
+        }
+
+        h2 {
+            font-size: 24px;
+            font-weight: 100;
+        }
+        .container{  
+        /* text-align: center; */
+        padding-top: 50px;
+        }
+
+        .icon {
+			display: inline-block;
+			width: 20px;
+			height: 20px;
+			margin-right: 10px;
+			background-image: url('./icons/calendar.jpg');
+			background-repeat: no-repeat;
+			background-size: cover;
+			background-position: center;
+		}
+
+        .user-icon:before {
+            content: "\f007"; /* Font Awesome user icon */
+            font-family: "Font Awesome 5 Free";
+            font-weight: 900;
+            font-size: 1.2em;
+            margin-right: 0.5em;
+        }
+    </style>
+    <script>
+        function success() {
+        if(document.getElementById("search").value==="") { 
+                document.getElementById('submit').disabled = true; 
+            } else { 
+                document.getElementById('submit').disabled = false;
+            }
+        }
+    </script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1 /jquery.min.js"></script>
+    <!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script> -->
+    <script>
+        var $j = jQuery.noConflict();
+        function start() {
+            var starting = document.getElementsByClassName("starting")[0];
+            starting.style.display = "block";
+            search = document.getElementById('search').value
+            $j.get('/', {search: search}, function(json_response) {
+            });
+
+            // debugger
+            // $j.ajax({
+            //     url: "{% url 'google_patent' %}",
+            //     type: "GET",
+            //     data: {search: search},
+            //     success: function(data) {}
+            // })
+            var current_progress = 0;
+            
+            // new
+            var progress = document.getElementsByClassName("progress")[0];
+            // var resultsButton = document.getElementsByClassName("resultsButton")[0]; //can use ids instead
+            var downloadButton = document.getElementsByClassName("downloadButton")[0];
+            // end
+            
+            var interval = setInterval(function() {
+                current_progress += 10;
+                $("#dynamic")
+                .css("width", current_progress + "%")
+                .attr("aria-valuenow", current_progress)
+                .text(current_progress + "% Complete");
+                downloadButton.style.display = "block";
+                if (current_progress >= 101) {
+                    clearInterval(interval);
+                    progress.style.display = "none";
+                    starting.style.display = "none";
+                    // resultsButton.style.display = "block";
+                }
+            }, 19000);
+        };
+
+        // function view_results() {
+        //     $j.get('/google_patent_results', {}, function(json_response) {
+        //         // debugger
+        //         var patents = json_response["patents"]
+        //         if (patents) {
+        //             for (var i = 0; i < patents.length; i++) {
+        //                 // $('tbody').append("<tr><th scope=\"row\">" + patents[i].S_No + "</th><td>" + patents[i].Title + "</td><td>" + patents[i].Patent_Number + "</td><td>" + patents[i].Abstract + "</td><td>" + patents[i].Classification + "</td><td>" + patents[i].Claims + "</td><td>" + patents[i].Images + "</td><td>" + patents[i].Description + "</td><td>" + patents[i].Background + "</td><td>" + patents[i].Summary + "</td><td>" + patents[i].Technical_Field + "</td><td>" + patents[i].Description_Of_The_Drawings + "</td><td>" + patents[i].Description_Of_The_Embodiments + "</td></tr>")
+        //                 var row = '<tr>';
+        //                 row += '<td>' + patents[i].id + '</td>';
+        //                 row += '<td>' + patents[i].title + '</td>';
+        //                 row += '<td>' + patents[i].patent_num + '</td>';
+        //                 row += '<td>' + patents[i].abstract + '</td>';
+        //                 row += '<td>' + patents[i].classification + '</td>';
+        //                 row += '<td>' + patents[i].claims + '</td>';
+        //                 row += '<td>' + patents[i].images + '</td>';
+        //                 row += '<td>' + patents[i].description + '</td>';
+        //                 row += '<td>' + patents[i].background + '</td>';
+        //                 row += '<td>' + patents[i].summary + '</td>';
+        //                 row += '<td>' + patents[i].tech_field + '</td>';
+        //                 row += '<td>' + patents[i].drawing + '</td>';
+        //                 row += '<td>' + patents[i].detail_desc + '</td>';
+        //                 // Add more columns as needed
+        //                 row += '</tr>';
+        //                 $('#my-table tbody').append(row);
+        //             }
+        //         }
+        //     });
+        //     // document.getElementById("resultsButton").disabled = true;
+        // };
+        
+        // function download() {
+        //     $j.get('/google_patent_results_download', {}, function(json_response) {});
+        // };
+    </script>
+    <script>
+        var latestRowId = 0;
+        function scrapeData() {
+            $j.ajax({
+                url: "{% url 'scraped_data' %}",
+                type: "GET",
+                success: function(data) {
+                    // var tbody = $('#my-table tbody');
+                    // var loaded = tbody.attr('data-loaded') == 'true';
+
+                    // Iterate over the scraped data and append new rows to the table
+                    // debugger
+                    $.each(data, function(index, row) {
+                        if (row.id > latestRowId) {
+                            // debugger
+                            var html = '';
+                            html += '<div class="container">';
+                            html += '<p style="font-size: 18px;">' + row.title + '</p>';
+                            html += '<div class="row">';
+                            html += '<div class="col-md-3">';
+                            html += '<p><i class="glyphicon glyphicon-user"></i> ' + row.inventor + '</p>';
+                            html += '</div>';
+                            html += '<div class="col-md-3">';
+                            html += '<p><i class="glyphicon glyphicon-th"></i> ' + row.assignee + '</p>';
+                            html += '</div>';
+                            html += '<div class="col-md-3">';
+                            html += '<p><i class="glyphicon glyphicon-calendar"></i> ' + row.date + '</p>';
+                            html += '</div>';
+                            html += '<div class="col-md-3">';
+                            html += '<p><i class="glyphicon glyphicon-link"></i> ' + row.patent_num + '</p>';
+                            html += '</div>';
+                            html += '</div>';
+                            html += '<div class="row">';
+                            html += '<div class="col-md-3">';
+                            if (row.images) {
+                                html += '<img src="' + row.images[0] + '" alt="Image" class="img-thumbnail">';
+                            }
+                            else {
+                                html += '<img src="https://placehold.it/300x300" alt="Image" class="img-thumbnail">';
+                            }
+                            html += '<button type="button" class="btn btn-primary btn-block" data-toggle="modal" data-target="#imageModal' + index + '">Show all images</button>';
+                            html += '</div>';
+                            html += '<div class="modal fade" id="imageModal' + index + '" tabindex="-1" role="dialog" aria-labelledby="imageModalLabel" aria-hidden="true">';
+                            html += '<div class="modal-dialog modal-lg" role="document">';
+                            html += '<div class="modal-content">';
+                            html += '<div class="modal-header">';
+                            html += '<h5 class="modal-title" id="imageModalLabel">All Images</h5>';
+                            html += '<button type="button" class="close" data-dismiss="modal" aria-label="Close">';
+                            html += '<span aria-hidden="true">&times;</span>';
+                            html += '</button>';
+                            html += '</div>';
+                            html += '<div class="modal-body">';
+                            
+                            html += '<div class="row">';
+                            for(var i=0; i<row.images.length; i++) {
+                                html += '<div class="col-md-3">';
+                                html += '<img src="' + row.images[i] + '" alt="Image" class="img-thumbnail">';
+                                html += '</div>';
+                            }
+                            html += '</div>';
+                            
+                            // html += '<div id="carouselExampleIndicators" class="carousel slide" data-ride="carousel">';
+                            // html += '<ol class="carousel-indicators">';
+                            // for(var i=0; i<row.images.length; i++) {
+                            //     if (i == 0){
+                            //         html += '<li data-target="#carouselExampleIndicators" data-slide-to="' + index+i + '" class="active"></li>';
+                            //     }
+                            //     else {
+                            //         html += '<li data-target="#carouselExampleIndicators" data-slide-to="' + index+i + '"></li>';
+                            //     }
+                            // }
+                            // html += '</ol>';
+                            // html += '<div class="carousel-inner">';
+                            // for(var i=0; i<row.images.length; i++) {
+                            //     if (i == 0){
+                            //         html += '<div class="carousel-item active">';
+                            //         html += '<img src="' + row.images[i] + '" class="d-block w-100" alt="' + i+1 + '" slide">';
+                            //         html += '</div>';
+                            //     }
+                            //     else {
+                            //         html += '<div class="carousel-item">';
+                            //         html += '<img src="' + row.images[i] + '" class="d-block w-100" alt="' + i+1 + '" slide">';
+                            //         html += '</div>';
+                            //     }
+                            // }
+                            // html += '</div>';
+                            // html += '<a class="carousel-control-prev" href="#carouselExampleIndicators" role="button" data-slide="prev">';
+                            // html += '<span class="carousel-control-prev-icon" aria-hidden="true"></span>';
+                            // html += '<span class="sr-only">Previous</span>';
+                            // html += '</a>';
+                            // html += '<a class="carousel-control-next" href="#carouselExampleIndicators" role="button" data-slide="next">';
+                            // html += '<span class="carousel-control-next-icon" aria-hidden="true"></span>';
+                            // html += '<span class="sr-only">Next</span>';
+                            // html += '</a>';
+                            // html += '</div>';
+                            // html += '</div>';
+                            // html += '<div class="modal-footer">';
+                            // html += '<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>';
+                            
+                            html += '</div>';
+                            html += '</div>';
+                            html += '</div>';
+                            html += '</div>';
+                            html += '<div class="col-md-9" style="width: 820px;">';
+                            html += '<ul class="nav nav-tabs">';
+                            html += '<li class="nav-item">';
+                            html += '<a class="nav-link active" href="#abstract' + index + '" data-toggle="tab">Abstract</a>';
+                            html += '</li>'
+                            html += '<li class="nav-item">';
+                            html += '<a class="nav-link" href="#classification' + index + '" data-toggle="tab">Classification</a>';
+                            html += '</li>'
+                            html += '<li class="nav-item">';
+                            html += '<a class="nav-link" href="#claims' + index + '" data-toggle="tab">Claims</a>';
+                            html += '</li>'
+                            html += '<li class="nav-item">';
+                            html += '<a class="nav-link" href="#description' + index + '" data-toggle="tab">Description</a>';
+                            html += '</li>'
+                            html += '<li class="nav-item">';
+                            html += '<a class="nav-link" href="#background' + index + '" data-toggle="tab">Background</a>';
+                            html += '</li>'
+                            html += '<li class="nav-item">';
+                            html += '<a class="nav-link" href="#summary' + index + '" data-toggle="tab">Summary</a>';
+                            html += '</li>'
+                            html += '<li class="nav-item">';
+                            html += '<a class="nav-link" href="#tech_field' + index + '" data-toggle="tab">Technical Field</a>';
+                            html += '</li>'
+                            html += '<li class="nav-item">';
+                            html += '<a class="nav-link" href="#detail_desc' + index + '" data-toggle="tab">Detail Description</a>';
+                            html += '</li>'
+                            html += '</ul>'
+                            html += '<div class="tab-content">'
+                            html += '<div class="tab-pane fade show in active" id="abstract' + index + '">'
+                            html += '<p>' + (row.abstract ? row.abstract.slice(0, 200) : row.abstract) + ' <span id="abstract_dots' + index + '">...</span><span id="abstract_more' + index + '" style="display: none;">' + (row.abstract ? row.abstract.slice(200) : row.abstract) + '</span></p>'
+                            if (row.abstract != 'None') {
+                                html += '<button onclick="myFunction(' + 'abstract_dots' + index + ', ' + 'abstract_more' + index + ', ' + 'abstract_read_more' + index + ')" id="abstract_read_more' + index + '">Read more</button>'
+                            }
+                            html += '</div>'
+                            html += '<div class="tab-pane fade" id="classification' + index + '">'
+                            html += '<p>' + (row.classification ? row.classification.slice(0, 200) : row.classification) + ' <span id="classification_dots' + index + '">...</span><span id="classification_more' + index + '" style="display: none;">' + (row.classification ? row.classification.slice(200) : row.classification) + '</span></p>'
+                            if (row.classification != 'None') {
+                                html += '<button onclick="myFunction(' + 'classification_dots' + index + ', ' + 'classification_more' + index + ', ' + 'classification_read_more' + index + ')" id="classification_read_more' + index + '">Read more</button>'
+                            }
+                            html += '</div>'
+                            html += '<div class="tab-pane fade" id="claims' + index + '">'
+                            html += '<p>' + (row.claims ? row.claims.slice(0, 200) : row.claims) + ' <span id="claims_dots' + index + '">...</span><span id="claims_more' + index + '" style="display: none;">' + (row.claims ? row.claims.slice(200) : row.claims) + '</span></p>'
+                            if (row.claims != 'None') {
+                                html += '<button onclick="myFunction(' + 'claims_dots' + index + ', ' + 'claims_more' + index + ', ' + 'claims_read_more' + index + ')" id="claims_read_more' + index + '">Read more</button>'
+                            }
+                            html += '</div>'
+                            html += '<div class="tab-pane fade" id="description' + index + '">'
+                            html += '<p>' + (row.description ? row.description.slice(0, 200) : row.description) + ' <span id="description_dots' + index + '">...</span><span id="description_more' + index + '" style="display: none;">' + (row.description ? row.description.slice(200) : row.description) + '</span></p>'
+                            if (row.description != 'None') {
+                                html += '<button onclick="myFunction(' + 'description_dots' + index + ', ' + 'description_more' + index + ', ' + 'description_read_more' + index + ')" id="description_read_more' + index + '">Read more</button>'
+                            }
+                            html += '</div>'
+                            html += '<div class="tab-pane fade" id="background' + index + '">'
+                            html += '<p>' + (row.background ? row.background.slice(0, 200) : row.background) + ' <span id="background_dots' + index + '">...</span><span id="background_more' + index + '" style="display: none;">' + (row.background ? row.background.slice(200) : row.background) + '</span></p>'
+                            if (row.background != 'None') {
+                                html += '<button onclick="myFunction(' + 'background_dots' + index + ', ' + 'background_more' + index + ', ' + 'background_read_more' + index + ')" id="background_read_more' + index + '">Read more</button>'
+                            }
+                            html += '</div>'
+                            html += '<div class="tab-pane fade" id="summary' + index + '">'
+                            html += '<p>' + (row.summary ? row.summary.slice(0, 200) : row.summary) + ' <span id="summary_dots' + index + '">...</span><span id="summary_more' + index + '" style="display: none;">' + (row.summary ? row.summary.slice(200) : row.summary) + '</span></p>'
+                            if (row.summary != 'None') {
+                                html += '<button onclick="myFunction(' + 'summary_dots' + index + ', ' + 'summary_more' + index + ', ' + 'summary_read_more' + index + ')" id="summary_read_more' + index + '">Read more</button>'
+                            }
+                            html += '</div>'
+                            html += '<div class="tab-pane fade" id="tech_field' + index + '">'
+                            html += '<p>' + (row.tech_field ? row.tech_field.slice(0, 200) : row.tech_field) + ' <span id="tech_field_dots' + index + '">...</span><span id="tech_field_more' + index + '" style="display: none;">' + (row.tech_field ? row.tech_field.slice(200) : row.tech_field) + '</span></p>'
+                            if (row.tech_field != 'None') {
+                                html += '<button onclick="myFunction(' + 'tech_field_dots' + index + ', ' + 'tech_field_more' + index + ', ' + 'tech_field_read_more' + index + ')" id="tech_field_read_more' + index + '">Read more</button>'
+                            }
+                            html += '</div>'
+                            html += '<div class="tab-pane fade" id="detail_desc' + index + '">'
+                            html += '<p>' + (row.detail_desc ? row.detail_desc.slice(0, 200) : row.detail_desc) + ' <span id="detail_desc_dots' + index + '">...</span><span id="detail_desc_more' + index + '" style="display: none;">' + (row.detail_desc ? row.detail_desc.slice(200) : row.detail_desc) + '</span></p>'
+                            if (row.detail_desc != 'None') {
+                                html += '<button onclick="myFunction(' + 'detail_desc_dots' + index + ', ' + 'detail_desc_more' + index + ', ' + 'detail_desc_read_more' + index + ')" id="detail_desc_read_more' + index + '">Read more</button>'
+                            }
+                            html += '</div>'
+                            html += '</div>'
+                            html += '</div>'
+                            html += '</div>'
+                            html += '</div>'
+
+
+                            $j('#patent_dynamic_desc').append(html);
+                            latestRowId = row.id;
+                        }
+                    });
+                    // Call the function again after some delay to get more data
+                    // setTimeout(scrapeData, 1000);
+                }
+            });
+        }
+        
+        $j(document).ready(function() {
+            // Call the scrapeData function to start scraping
+            // debugger
+            scrapeData();
+            setInterval(scrapeData, 4000);
+        });
+    </script>
+
+    <script>
+        function myFunction(dots, more, read_more) {
+        // var dots = document.getElementById(dotss);
+        // var moreText = document.getElementById(moree);
+        // var btnText = document.getElementById(read_moree);
+        
+        if (dots.style.display === "none") {
+            dots.style.display = "inline";
+            read_more.innerHTML = "Read more"; 
+            more.style.display = "none";
+        } else {
+            dots.style.display = "none";
+            read_more.innerHTML = "Read less"; 
+            more.style.display = "inline";
+        }
+        }
+    </script>
+    
+
+    <style>
+		.container {
+			margin-top: 50px;
+		}
+		.tab-content {
+			margin-left: 50px;
+		}
+		.tab-pane {
+			padding: 20px;
+			border: 1px solid #ccc;
+			border-top: none;
+			background-color: #f9f9f9;
+		}
+		.img-thumbnail {
+			margin-right: 20px;
+			margin-bottom: 20px;
+		}
+	</style>
+	<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script>
+	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
+	<script>
+		$(function() {
+			$('.nav-tabs a').click(function() {
+				$(this).tab('show');
+			});
+		});
+	</script>
+    <script>
+        $(document).ready(function(){
+            $('#imageModal').on('shown.bs.modal', function (e) {
+                $('.carousel').carousel({
+                    interval: 2000 // Change the interval time (in milliseconds) between slide transitions here
+                })
+            })
+        });
+    </script>
+</body>
+
+</html>

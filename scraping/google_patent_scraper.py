@@ -4,9 +4,10 @@ from datetime import datetime
 from bs4 import BeautifulSoup
 import pandas as pd
 import requests
-import wordninja
+# import wordninja
 from google_patent_scraper_project.settings import BASE_URL
-from google_patent_scraper import scraper_class
+# from scraping.google_patent_scraper import scraper_class
+from scraping.scrape_patent_links import ProjectPQ_Scraper
 from scraping.models import *
 
 
@@ -14,9 +15,11 @@ class Google_Patent_Scraper():
 
     # Constructor to save website which we will pass while calling Scraper class:
     def __init__(self, search):
-        self.scraper = scraper_class() 
-        self.search = "+".join(search.split())
-        self.main_url = 'https://www.google.com/search?q={0}&tbm=pts&sxsrf=AJOqlzUNTt673TM7N19-yya2UM4oila_bg:1679480269775&ei=zdUaZKbsLrWAi-gP-9Sj2A8&start={1}&sa=N&ved=2ahUKEwjmhozHp-_9AhU1wAIHHXvqCPsQ8NMDegQIDhAW&biw=1408&bih=975&dpr=1'
+        # self.scraper = scraper_class()
+        # self.search = "+".join(search.split())
+        self.search = search
+        self.pro_pq_obj = ProjectPQ_Scraper()
+        # self.main_url = 'https://www.google.com/search?q={0}&tbm=pts&sxsrf=AJOqlzUNTt673TM7N19-yya2UM4oila_bg:1679480269775&ei=zdUaZKbsLrWAi-gP-9Sj2A8&start={1}&sa=N&ved=2ahUKEwjmhozHp-_9AhU1wAIHHXvqCPsQ8NMDegQIDhAW&biw=1408&bih=975&dpr=1'
     
     def index_containing_substring(self, the_list, substring):
         for i, s in enumerate(the_list):
@@ -75,20 +78,20 @@ class Google_Patent_Scraper():
         para_text = soup.find(tag).text
         return para_text
     
-    def get_all_ref_num(self, soup):
-        patents_ls = soup.text.split('/patents/')
-        ref_num = []
-        for i in range(1, len(patents_ls)):
-            mix_ref_num = patents_ls[i].split()[0]
-            if '?' in mix_ref_num:
-                ref_num.append(mix_ref_num.split('?')[0])
-            else:
-                word_ninja_ls = wordninja.split(mix_ref_num)
-                if len(word_ninja_ls) > 2:
-                    ref_num.append("".join(word_ninja_ls[:-1]))
-                else:
-                    ref_num.append("".join(word_ninja_ls))
-        return ref_num
+    # def get_all_ref_num(self, soup):
+    #     patents_ls = soup.text.split('/patents/')
+    #     ref_num = []
+    #     for i in range(1, len(patents_ls)):
+    #         mix_ref_num = patents_ls[i].split()[0]
+    #         if '?' in mix_ref_num:
+    #             ref_num.append(mix_ref_num.split('?')[0])
+    #         else:
+    #             word_ninja_ls = wordninja.split(mix_ref_num)
+    #             if len(word_ninja_ls) > 2:
+    #                 ref_num.append("".join(word_ninja_ls[:-1]))
+    #             else:
+    #                 ref_num.append("".join(word_ninja_ls))
+    #     return ref_num
     
     def get_classification(self, soup):
         section = soup.find_all('section')
@@ -99,22 +102,22 @@ class Google_Patent_Scraper():
                 classification = s.text
         return classification
 
-    def get_assignee_inventor_date(self, patent_num):
-        err, soup, url = self.scraper.request_single_patent(patent_num)
+    # def get_assignee_inventor_date(self, patent_num):
+    #     err, soup, url = self.scraper.request_single_patent(patent_num)
         
-        # ~ Parse results of scrape ~ #
-        patent_parsed = self.scraper.get_scraped_data(soup, patent_num, url)
+    #     # ~ Parse results of scrape ~ #
+    #     patent_parsed = self.scraper.get_scraped_data(soup, patent_num, url)
 
-        inventor = eval(patent_parsed['inventor_name'])[0]['inventor_name']
-        assignee = eval(patent_parsed['assignee_name_orig'])[0]['assignee_name']
-        date = patent_parsed['pub_date']
+    #     inventor = eval(patent_parsed['inventor_name'])[0]['inventor_name']
+    #     assignee = eval(patent_parsed['assignee_name_orig'])[0]['assignee_name']
+    #     date = patent_parsed['pub_date']
 
-        return assignee, inventor, date
+    #     return assignee, inventor, date
     
-    def save_data(self, data_ls):
+    # def save_data(self, data_ls):
 
-        scraped_data = pd.DataFrame(data_ls)
-        scraped_data.to_excel('./Data/Google_Patents_Data.xlsx')
+    #     scraped_data = pd.DataFrame(data_ls)
+    #     scraped_data.to_excel('./Data/Google_Patents_Data.xlsx')
 
     # This is the main function that will scrape all data:
     def main(self):
@@ -126,128 +129,131 @@ class Google_Patent_Scraper():
         
         # Delete old records before adding new one:
         # Google_Patent.objects.all().delete()
+        self.pro_pq_obj.searching_links_from_projectpq(self.search)
+        all_patents_url = self.pro_pq_obj.get_all_links()
 
-        count = 0
-        while len(all_details) < 50:
-            url = self.main_url.format(self.search, count)
-            soup = self.get_soup(url)
-            all_ref_num = self.get_all_ref_num(soup)
+        # count = 0
+        # while len(all_details) < 50:
+            # url = self.main_url.format(self.search, count)
+            # soup = self.get_soup(url)
+            # all_ref_num = self.get_all_ref_num(soup)
             
-            for num in tqdm(range(len(all_ref_num))):
-                if len(all_details) == 50:
-                    break
+        for num in tqdm(range(len(all_patents_url))):
+            if len(all_details) == 50:
+                break
+            
+            # patent_url = 'https://patents.google.com/patent/{0}?oq={1}'.format(all_ref_num[num], self.search)
+            patent_url, inventor, assignee, date = all_patents_url[num]
+            soup = self.get_soup(patent_url)
+            all_headings = self.get_all_headings(soup)
+            title_text = soup.title.text
+            if 'Error' not in title_text:
+                # assignee, inventor, date = self.get_assignee_inventor_date(all_ref_num[num])
+                header = title_text.split(' - ')
+                try:
+                    abstract = " ".join(soup.find('abstract').text.split())
+                except:
+                    abstract = 'None'
+                try:
+                    # patent_num = soup.find('h2').text
+                    patent_num = header[0]
+                except:
+                    patent_num = 'None'
+                try:
+                    # title = " ".join(soup.find('h1', id = 'title').text.split())
+                    title = " ".join(header[1].split())
+                except:
+                    title = 'None'
+                try:
+                    try:
+                        classification = " ".join(soup.find('classification-viewer').text.split())
+                    except:
+                        classification = self.get_classification(soup)
+                except:
+                    classification = 'None'
+                try:
+                    # claims = " ".join(soup.find('section', id = 'claims').text.split())
+                    claims = soup.find('section', itemprop = 'claims').text
+                except:
+                    claims = 'None'
+                try:
+                    # images = [i['src'] for i in soup.find('image-carousel').find_all('img')]
+                    images = [i.find('img')['src'] for i in soup.find_all('li', itemprop = 'images')]
+                except:
+                    images = 'None'
+                try:
+                    try:
+                        background = self.get_text_by_tags(soup, 'background-art')
+                    except:
+                        background = self.get_headings_paragraph('background', all_headings, 'summary', soup)
+                except:
+                    background = 'None'
+                try:
+                    try:
+                        summary = self.get_text_by_tags(soup, 'summary-of-invention') # To be done
+                    except:
+                        summary = self.get_headings_paragraph('summary', all_headings, 'drawing', soup)
+                except:
+                    summary = 'None'
+                try:
+                    tech_field = self.get_text_by_tags(soup, 'technical-field')
+                except:
+                    tech_field = 'None'
+                try:
+                    try:
+                        drawing = self.get_text_by_tags(soup, 'description-of-drawings')
+                    except:
+                        drawing = self.get_headings_paragraph('drawing', all_headings, 'detail', soup)
+                except:
+                    drawing = 'None'
+                try:
+                    try:
+                        detail_desc = self.get_text_by_tags(soup, 'description-of-embodiments')
+                    except:
+                        try:
+                            detail_desc = self.get_text_by_tags(soup, 'disclosure')
+                        except:
+                            detail_desc = self.get_headings_paragraph('detail', all_headings, None, soup)
+                except:
+                    detail_desc = 'None'
+                try:
+                    try:
+                        description = self.get_text_by_tags(soup, 'description')
+                    except:
+                        description = self.get_description('background', all_headings, soup)
+                except:
+                    description = "{0}\n{1}\n{2}\n{3}\n{4}".format(background, summary, tech_field, drawing, detail_desc).replace('None', '')
                 
-                patent_url = 'https://patents.google.com/patent/{0}?oq={1}'.format(all_ref_num[num], self.search)
-                soup = self.get_soup(patent_url)
-                all_headings = self.get_all_headings(soup)
-                title_text = soup.title.text
-                if 'Error' not in title_text:
-                    assignee, inventor, date = self.get_assignee_inventor_date(all_ref_num[num])
-                    header = title_text.split(' - ')
-                    try:
-                        abstract = " ".join(soup.find('abstract').text.split())
-                    except:
-                        abstract = 'None'
-                    try:
-                        # patent_num = soup.find('h2').text
-                        patent_num = header[0]
-                    except:
-                        patent_num = 'None'
-                    try:
-                        # title = " ".join(soup.find('h1', id = 'title').text.split())
-                        title = " ".join(header[1].split())
-                    except:
-                        title = 'None'
-                    try:
-                        try:
-                            classification = " ".join(soup.find('classification-viewer').text.split())
-                        except:
-                            classification = self.get_classification(soup)
-                    except:
-                        classification = 'None'
-                    try:
-                        # claims = " ".join(soup.find('section', id = 'claims').text.split())
-                        claims = soup.find('section', itemprop = 'claims').text
-                    except:
-                        claims = 'None'
-                    try:
-                        # images = [i['src'] for i in soup.find('image-carousel').find_all('img')]
-                        images = [i.find('img')['src'] for i in soup.find_all('li', itemprop = 'images')]
-                    except:
-                        images = 'None'
-                    try:
-                        try:
-                            background = self.get_text_by_tags(soup, 'background-art')
-                        except:
-                            background = self.get_headings_paragraph('background', all_headings, 'summary', soup)
-                    except:
-                        background = 'None'
-                    try:
-                        try:
-                            summary = self.get_text_by_tags(soup, 'summary-of-invention') # To be done
-                        except:
-                            summary = self.get_headings_paragraph('summary', all_headings, 'drawing', soup)
-                    except:
-                        summary = 'None'
-                    try:
-                        tech_field = self.get_text_by_tags(soup, 'technical-field')
-                    except:
-                        tech_field = 'None'
-                    try:
-                        try:
-                            drawing = self.get_text_by_tags(soup, 'description-of-drawings')
-                        except:
-                            drawing = self.get_headings_paragraph('drawing', all_headings, 'detail', soup)
-                    except:
-                        drawing = 'None'
-                    try:
-                        try:
-                            detail_desc = self.get_text_by_tags(soup, 'description-of-embodiments')
-                        except:
-                            try:
-                                detail_desc = self.get_text_by_tags(soup, 'disclosure')
-                            except:
-                                detail_desc = self.get_headings_paragraph('detail', all_headings, None, soup)
-                    except:
-                        detail_desc = 'None'
-                    try:
-                        try:
-                            description = self.get_text_by_tags(soup, 'description')
-                        except:
-                            description = self.get_description('background', all_headings, soup)
-                    except:
-                        description = "{0}\n{1}\n{2}\n{3}\n{4}".format(background, summary, tech_field, drawing, detail_desc).replace('None', '')
-                    
-                    dic = {
-                        "assignee": assignee,
-                        "inventor": inventor,
-                        "date": date,
-                        "title": title,
-                        "patent_num": patent_num,
-                        "abstract": abstract,
-                        "classification": classification,
-                        "claims": claims,
-                        "images": images,
-                        "description": description,
-                        "background": background,
-                        "summary": summary,
-                        "tech_field": tech_field,
-                        "drawing": drawing,
-                        "detail_desc": detail_desc
-                    }
+                dic = {
+                    "assignee": assignee,
+                    "inventor": inventor,
+                    "date": date,
+                    "title": title,
+                    "patent_num": patent_num,
+                    "abstract": abstract,
+                    "classification": classification,
+                    "claims": claims,
+                    "images": images,
+                    "description": description,
+                    "background": background,
+                    "summary": summary,
+                    "tech_field": tech_field,
+                    "drawing": drawing,
+                    "detail_desc": detail_desc
+                }
 
-                    all_details.append(dic)
+                all_details.append(dic)
 
-                    Google_Patent.objects.create(**dic)
-                    
-                    # print('\n----------Dic-----------\n', dic)
+                Google_Patent.objects.create(**dic)
+                
+                # print('\n----------Dic-----------\n', dic)
 
-                    # self.save_data(all_details)
+                # self.save_data(all_details)
 
-                    # with open('google_patent_results.json', 'w') as outfile:
-                    #     json.dump(all_details, outfile)
+                # with open('google_patent_results.json', 'w') as outfile:
+                #     json.dump(all_details, outfile)
             
-            count += 10
+            # count += 10
         
         # Google_Patent.objects.bulk_create([Google_Patent(**item) for item in all_details])
         
